@@ -1,0 +1,38 @@
+# PrometheusRule for kube-prometheus-stack.
+# Apply after the kps release exists:
+#   kubectl apply -f monitoring/alerts/cpu-throttling.yaml
+# Then confirm the rule is loaded:
+#   kubectl -n monitoring get prometheusrule
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: boutique-cpu-throttling
+  namespace: monitoring
+  labels:
+    # kube-prometheus-stack selects rules with this release label by default
+    release: kps
+    app: kube-prometheus-stack
+spec:
+  groups:
+    - name: boutique.cpu-throttling
+      rules:
+        - alert: HighCPUThrottling
+          expr: |
+            (
+              sum by (namespace, pod) (
+                rate(container_cpu_cfs_throttled_periods_total{namespace="boutique", container!="", pod=~"productcatalog.*"}[5m])
+              )
+              /
+              sum by (namespace, pod) (
+                rate(container_cpu_cfs_periods_total{namespace="boutique", container!="", pod=~"productcatalog.*"}[5m])
+              )
+            ) > 0.25
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CFS CPU throttling on {{ $labels.pod }}"
+            description: >-
+              productcatalog in boutique has been throttled for more than 25% of
+              CFS periods for 5 minutes (value={{ $value | humanizePercentage }}).
+              Often caused by a too-low CPU limit relative to burst demand.

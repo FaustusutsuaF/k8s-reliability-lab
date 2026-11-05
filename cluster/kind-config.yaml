@@ -1,0 +1,12 @@
+# kind cluster "lab" used for the portfolio fault-drill environment.
+# Matches ~/k8s-lab/kind-config.yaml on the WSL workstation (user faust).
+# Recreate with: kind create cluster --config cluster/kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: lab
+networking:
+  apiServerAddress: "127.0.0.1"
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker
