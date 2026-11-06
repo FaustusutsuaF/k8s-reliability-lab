@@ -50,5 +50,5 @@ kubectl -n boutique port-forward svc/frontend 8080:80 --address 127.0.0.1
 ## Status
 
 - [x] Drill 01 CPU throttling — run + postmortem (2026-11-04)
-- [ ] Drill 01 — alert verification rerun
+- [x] Drill 01 — alert verification rerun (2026-11-05 → 2026-11-06 Asia/Shanghai): inject → `HighCPUThrottling` Firing → restore → Normal
 - [ ] Drill 02 — Zalando CoreDNS (planned)

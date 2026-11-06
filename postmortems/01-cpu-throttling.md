@@ -50,3 +50,19 @@ sum(rate(container_cpu_cfs_periods_total{namespace="boutique",pod=~"productcatal
    Set requests from the P95/P99 of actual usage; for latency-sensitive services, consider loosening or removing the CPU limit (Buffer's approach).
 3. 下次演练加上延迟指标，量化对用户的实际影响。
    Add a latency metric in the next drill to quantify the real impact on users.
+
+## 告警验证复跑 / Alert verification rerun (2026-11-05 → 2026-11-06, Asia/Shanghai)
+
+已应用 [`monitoring/alerts/cpu-throttling.yaml`](../monitoring/alerts/cpu-throttling.yaml)（PrometheusRule `boutique-cpu-throttling`，`HighCPUThrottling`，连续 5 分钟 >25%）。
+
+Applied [`monitoring/alerts/cpu-throttling.yaml`](../monitoring/alerts/cpu-throttling.yaml) (PrometheusRule `boutique-cpu-throttling`, `HighCPUThrottling`, above 25% for 5 minutes).
+
+- 晚间再次注入 `--limits=cpu=20m --requests=cpu=10m`；Explore 节流比例峰值约 0.34～0.42，稳定在约 0.22～0.27。
+  Re-injected `--limits=cpu=20m --requests=cpu=10m`; Explore throttled share peaked about 0.34–0.42 and held around 0.22–0.27.
+- `HighCPUThrottling` 进入 **Firing**（Grafana Alert rules，`state:firing`）。
+  `HighCPUThrottling` entered **Firing** (Grafana Alert rules, `state:firing`).
+- 约 00:18 恢复 `--limits=cpu=200m --requests=cpu=100m`；约 00:19 比值回落到 0；随后告警回到 **Normal**。
+  Restored `--limits=cpu=200m --requests=cpu=100m` around 00:18; ratio fell to 0 around 00:19; alert returned to **Normal** afterward.
+
+闭环：注入 → 告警 Firing → 恢复 → Normal。
+Closed loop: inject → alert Firing → restore → Normal.
